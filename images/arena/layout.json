@@ -1,0 +1,245 @@
+{
+  "empty_icon": {
+    "file": "empty_icon.png",
+    "rect": [
+      935,
+      638,
+      42,
+      46
+    ]
+  },
+  "empty_edge": {
+    "file": "empty_edge.png",
+    "rect": [
+      675,
+      635,
+      15,
+      50
+    ]
+  },
+  "warning_cancel_edge": {
+    "file": "warning_cancel_edge.png",
+    "rect": [
+      325,
+      525,
+      34,
+      61
+    ]
+  },
+  "warning_confirm_edge": {
+    "file": "warning_confirm_edge.png",
+    "rect": [
+      540,
+      525,
+      34,
+      61
+    ]
+  },
+  "warning_hide_edge": {
+    "file": "warning_hide_edge.png",
+    "rect": [
+      755,
+      525,
+      34,
+      61
+    ]
+  },
+  "warning_arena_icon": {
+    "file": "warning_arena_icon.png",
+    "rect": [
+      936,
+      640,
+      34,
+      42
+    ]
+  },
+  "screensaver_left": {
+    "file": "screensaver_left.png",
+    "rect": [
+      30,
+      134,
+      55,
+      76
+    ]
+  },
+  "screensaver_right": {
+    "file": "screensaver_right.png",
+    "rect": [
+      1180,
+      163,
+      60,
+      85
+    ]
+  },
+  "grid": {
+    "file": "grid.png",
+    "rect": [
+      1222,
+      14,
+      38,
+      38
+    ]
+  },
+  "back": {
+    "file": "back.png",
+    "rect": [
+      22,
+      13,
+      32,
+      39
+    ]
+  },
+  "sanctuary": {
+    "file": "sanctuary.png",
+    "rect": [
+      40,
+      144,
+      34,
+      36
+    ]
+  },
+  "pass": {
+    "file": "pass.png",
+    "rect": [
+      37,
+      375,
+      43,
+      41
+    ]
+  },
+  "gate_left": {
+    "file": "gate_left.png",
+    "rect": [
+      334,
+      557,
+      25,
+      85
+    ]
+  },
+  "gate_right": {
+    "file": "gate_right.png",
+    "rect": [
+      918,
+      558,
+      26,
+      89
+    ]
+  },
+  "gate_star": {
+    "file": "gate_star.png",
+    "rect": [
+      620,
+      641,
+      40,
+      61
+    ]
+  },
+  "ranking": {
+    "file": "ranking.png",
+    "rect": [
+      1030,
+      397,
+      31,
+      35
+    ]
+  },
+  "record": {
+    "file": "record.png",
+    "rect": [
+      1032,
+      298,
+      28,
+      33
+    ]
+  },
+  "npc_active": {
+    "file": "npc_active.png",
+    "rect": [
+      1003,
+      174,
+      12,
+      80
+    ]
+  },
+  "prepare": {
+    "file": "prepare.png",
+    "rect": [
+      420,
+      532,
+      58,
+      48
+    ]
+  },
+  "npc_reward": {
+    "file": "npc_reward.png",
+    "rect": [
+      940,
+      547,
+      40,
+      40
+    ]
+  },
+  "quick_icon": {
+    "file": "quick_icon.png",
+    "rect": [
+      928,
+      634,
+      51,
+      57
+    ]
+  },
+  "quick_edge": {
+    "file": "quick_edge.png",
+    "rect": [
+      675,
+      635,
+      15,
+      50
+    ]
+  },
+  "result_ornament": {
+    "file": "result_ornament.png",
+    "rect": [
+      586,
+      240,
+      108,
+      45
+    ]
+  },
+  "result_medal": {
+    "file": "result_medal.png",
+    "rect": [
+      578,
+      489,
+      42,
+      43
+    ]
+  },
+  "result_gem": {
+    "file": "result_gem.png",
+    "rect": [
+      664,
+      489,
+      32,
+      46
+    ]
+  },
+  "menu_close": {
+    "file": "menu_close.png",
+    "rect": [
+      1224,
+      16,
+      33,
+      33
+    ]
+  },
+  "menu_book": {
+    "file": "menu_book.png",
+    "rect": [
+      1060,
+      117,
+      39,
+      44
+    ]
+  }
+}

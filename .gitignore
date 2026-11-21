@@ -6,6 +6,10 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
+arena_probe/
+/tools/arena_probe.py
+/tools/run_arena_check.py
 ENV/
 build/
 develop-eggs/
@@ -45,6 +49,7 @@ Thumbs.db
 screenshots/
 *.png
 !images/**/*.png
+!tests/fixtures/arena/*.png
 !old/equipment_reroll/images/**/*.png
 !old/event/images/**/*.png
 

@@ -61,6 +61,9 @@ def used_images(root):
         if mask_path.is_file():
             used.add(mask_path.relative_to(root).as_posix())
     used.add('images/buttons/template_masks.json')
+    arena = root / 'images/arena'
+    used.update(p.relative_to(root).as_posix() for p in arena.glob('*.png'))
+    used.add('images/arena/layout.json')
     missing = sorted(name for name in used if not (root/name).is_file())
     if missing:
         raise FileNotFoundError('Missing release images: '+', '.join(missing))

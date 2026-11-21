@@ -34,9 +34,9 @@ class SmallWindowTest(unittest.TestCase):
         session = self.session
         self.assertEqual(
             [session.mode_notebook.tab(tab, 'text') for tab in session.mode_notebook.tabs()],
-            ['비밀상점', '펭귄', '자동 탐사', '이벤트'],
+            ['비밀상점', '펭귄', '자동 탐사', '이벤트', '일일 숙제'],
         )
-        for tab in (session.shop_tab, session.penguin_tab, session.chaos_tab, session.event_tab):
+        for tab in (session.shop_tab, session.penguin_tab, session.chaos_tab, session.event_tab, session.daily_tab):
             with self.subTest(tab=tab):
                 session.mode_notebook.select(tab)
                 self.root.update()
@@ -45,6 +45,9 @@ class SmallWindowTest(unittest.TestCase):
                     self.assertEqual(session.event_notice_label.cget('text'), '현재 지원하는 이벤트가 없습니다')
                     self.assertTrue(session.event_notice_label.winfo_viewable())
                     self.assertEqual(session.event_tab.winfo_children(), [session.event_notice_label])
+                elif tab == session.daily_tab:
+                    self.assertTrue(session.arena_start_btn.winfo_viewable())
+                    self.assertIn('메인 로비', session.arena_notice_label.cget('text'))
                 else:
                     self.assertGreater(area.content.winfo_height(), area.canvas.winfo_height())
                 area.canvas.yview_moveto(1)

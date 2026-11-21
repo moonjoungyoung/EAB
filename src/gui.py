@@ -52,6 +52,7 @@ if __package__ in (None, ""):
     from src.image_matcher import ImageMatcher, read_image, matching_failure_guidance
     from src.json_macro_engine import JsonMacroEngine
     from src.penguin_bot import PenguinBot
+    from src.arena_bot import ArenaBot
     from src.release_checker import get_available_update
     from src.update_dialog import UpdateConfirmationDialog
     from src.remote_script import RemoteScriptUpdater
@@ -74,6 +75,7 @@ else:
     from .image_matcher import ImageMatcher, read_image, matching_failure_guidance
     from .json_macro_engine import JsonMacroEngine
     from .penguin_bot import PenguinBot
+    from .arena_bot import ArenaBot
     from .release_checker import get_available_update
     from .update_dialog import UpdateConfirmationDialog
     from .remote_script import RemoteScriptUpdater
@@ -387,10 +389,12 @@ class SessionView:
         self.penguin_tab = ttk.Frame(self.mode_notebook)
         self.chaos_tab = ttk.Frame(self.mode_notebook)
         self.event_tab = ttk.Frame(self.mode_notebook)
+        self.daily_tab = ttk.Frame(self.mode_notebook)
         self.mode_notebook.add(self.shop_tab, text="비밀상점")
         self.mode_notebook.add(self.penguin_tab, text="펭귄")
         self.mode_notebook.add(self.chaos_tab, text="자동 탐사")
         self.mode_notebook.add(self.event_tab, text="이벤트")
+        self.mode_notebook.add(self.daily_tab, text=i18n.tr("일일 숙제"))
 
         self.settings_frame = ttk.LabelFrame(self.shop_tab, text="매크로 설정", padding=10)
         self.settings_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -570,6 +574,7 @@ class SessionView:
         self._create_penguin_widgets()
         self._create_event_widgets()
         self._create_chaos_widgets()
+        self._create_daily_widgets()
 
         self._tab_tooltip_window = None
         self._tab_tooltip_label = None
@@ -578,7 +583,7 @@ class SessionView:
         self.mode_notebook.bind('<Leave>', self._on_mode_notebook_leave, add='+')
         self.mode_notebook.bind('<ButtonPress-1>', self._on_mode_notebook_leave, add='+')
         self.mode_notebook.bind('<Destroy>', self._on_mode_notebook_leave, add='+')
-        for tab in (self.shop_tab, self.penguin_tab, self.chaos_tab, self.event_tab):
+        for tab in (self.shop_tab, self.penguin_tab, self.chaos_tab, self.event_tab, self.daily_tab):
             tab.bind('<Configure>', self._resize_mode_tab, add='+')
         self._apply_language_feature_support()
         self.mode_notebook.after_idle(self._resize_mode_tab)
@@ -748,6 +753,8 @@ class SessionView:
             self.penguin_start_btn,
             self.chaos_start_btn,
             self.chaos_resume_btn,
+            self.arena_start_btn,
+            self.arena_resume_btn,
         ]
         for button in accent_buttons:
             button.configure(style="Accent.TButton")
@@ -866,12 +873,17 @@ class SessionView:
 
         self.debug_checkbox.config(text=i18n.tr("디버그 모드 (상세 로그)"))
         self.mumu_checkbox.config(text=i18n.tr(self.input_profile_label_text))
+        for widget, text in getattr(self, "arena_i18n_widgets", ()):
+            widget.config(text=i18n.tr(text))
+        if hasattr(self, "arena_status_label"):
+            self._update_arena_stats(self._last_arena_stats)
 
         try:
             self.mode_notebook.tab(self.shop_tab, text=i18n.tr("비밀상점"))
             self.mode_notebook.tab(self.penguin_tab, text=i18n.tr("펭귄"))
             self.mode_notebook.tab(self.chaos_tab, text=i18n.tr("자동 탐사"))
             self.mode_notebook.tab(self.event_tab, text=i18n.tr("이벤트"))
+            self.mode_notebook.tab(self.daily_tab, text=i18n.tr("일일 숙제"))
         except Exception:
             pass
 
@@ -1252,6 +1264,34 @@ class SessionView:
             padding=20,
         )
         self.event_notice_label.pack(fill=tk.X, padx=10, pady=5)
+
+    def _create_daily_widgets(self):
+        self.arena_i18n_widgets = []
+        self.arena_settings_frame = ttk.LabelFrame(
+            self.daily_tab, text=i18n.tr("NPC 아레나"), padding=12)
+        self.arena_settings_frame.pack(fill=tk.X, padx=10, pady=5)
+        self.arena_i18n_widgets.append((self.arena_settings_frame, "NPC 아레나"))
+        notice = "게임 일반 메뉴에서 시작하면 메인 로비로 돌아온 뒤 진행합니다. NPC 빠른 대전 소진 시 종료합니다."
+        self.arena_notice_label = ttk.Label(
+            self.arena_settings_frame, text=i18n.tr(notice), wraplength=620)
+        self.arena_notice_label.pack(anchor=tk.W, pady=(0, 10))
+        self.arena_i18n_widgets.append((self.arena_notice_label, notice))
+        controls = ttk.Frame(self.arena_settings_frame)
+        controls.pack(fill=tk.X)
+        for name, title, command in (
+            ("start", "NPC 아레나 시작", self._start_arena_bot),
+            ("pause", "⏸ 일시정지", self._pause_bot),
+            ("resume", "▶ 재개", self._resume_bot),
+            ("stop", "■ 중지", self._stop_bot),
+        ):
+            button = ttk.Button(controls, text=i18n.tr(title), command=command, state=tk.DISABLED)
+            button.pack(side=tk.LEFT, padx=(0, 8))
+            setattr(self, f"arena_{name}_btn", button)
+            self.arena_i18n_widgets.append((button, title))
+        self._arena_status_raw = "준비"
+        self._last_arena_stats = {"completed_runs": 0}
+        self.arena_status_label = ttk.Label(self.arena_settings_frame, text=i18n.tr("준비"), wraplength=620)
+        self.arena_status_label.pack(anchor=tk.W, pady=(12, 0))
 
 
     def refresh_macro_combo(self):
@@ -1685,6 +1725,7 @@ class SessionView:
             self.start_btn.config(state=tk.NORMAL)
             self.penguin_start_btn.config(state=tk.NORMAL)
             self.chaos_start_btn.config(state=tk.NORMAL)
+            self._update_arena_controls(False)
             self.test_btn.config(state=tk.NORMAL)
             self.connect_btn.config(state=tk.DISABLED)
             self.disconnect_btn.config(state=tk.NORMAL)
@@ -1731,6 +1772,7 @@ class SessionView:
                     self.start_btn.config(state=tk.NORMAL)
                     self.penguin_start_btn.config(state=tk.NORMAL)
                     self.chaos_start_btn.config(state=tk.NORMAL)
+                    self._update_arena_controls(False)
                     self.test_btn.config(state=tk.NORMAL)
                     self.connect_btn.config(state=tk.DISABLED)
                     self.disconnect_btn.config(state=tk.NORMAL)
@@ -1848,6 +1890,84 @@ class SessionView:
             self.bot_thread = threading.Thread(target=self._run_bot, args=(refresh_count, buy_count, natural_refresh), daemon=True)
             self.bot_thread.start()
 
+
+    def _start_arena_bot(self):
+        with log_session(self.name):
+            if (self.is_running or getattr(self, '_stove_resize_pending', False) or
+                    (getattr(self, 'bot_thread', None) and self.bot_thread.is_alive())):
+                return
+            if not self.adb_controller:
+                messagebox.showerror(i18n.tr("오류"), i18n.tr("장치(ADB/STOVE)가 연결되지 않았습니다."))
+                return
+            try:
+                self.bot = ArenaBot(
+                    self.adb_controller, debug_mode=self.debug_mode_var.get(),
+                    runtime_dir=self.runtime_dir)
+            except Exception as exc:
+                messagebox.showerror(i18n.tr("NPC 아레나 준비 실패"), str(exc))
+                return
+            self.was_stopped_by_user = False
+            self.is_running = True
+            self.current_mode = "arena"
+            self._arena_status_raw = "진행 중"
+            self._update_arena_stats({"completed_runs": 0})
+            self._set_running_ui(True)
+            self.root.after(500, self._update_running_state)
+            self.bot_thread = threading.Thread(target=self._run_arena_bot, daemon=True)
+            try:
+                self.bot_thread.start()
+            except Exception as exc:
+                self.is_running = False
+                self._arena_status_raw = "실행 실패"
+                self._update_arena_stats({"completed_runs": 0, "reason": str(exc)})
+                self._set_running_ui(False)
+                messagebox.showerror(i18n.tr("NPC 아레나 실행 실패"), str(exc))
+
+    def _run_arena_bot(self):
+        with log_session(self.name):
+            try:
+                result = self.bot.run()
+            except Exception as exc:
+                logger.exception("NPC 아레나 실행 오류")
+                result = {"status": "failed", "reason": str(exc),
+                          "completed_runs": self.bot.stats.get("completed_runs", 0)}
+            if result.get("status") == "failed":
+                self._save_failure_report(result)
+            if not self.app.is_closing:
+                self.root.after(0, lambda result=result: self._finish_arena_run(result))
+            else:
+                self.is_running = False
+
+    def _finish_arena_run(self, result):
+        self.is_running = False
+        self._arena_status_raw = {"completed": "완료", "stopped": "중지"}.get(result.get("status"), "실행 실패")
+        self._update_arena_stats(result)
+        self.log(self.arena_status_label.cget("text"))
+        self._set_running_ui(False)
+        if result.get("status") == "completed" and not self.was_stopped_by_user:
+            self._play_complete_sound()
+        else:
+            self._play_stopped_sound()
+
+    def _update_arena_stats(self, stats):
+        self._last_arena_stats = dict(stats)
+        text = i18n.tr("NPC 아레나 {status} · 완료 {count}회",
+                       status=i18n.tr(self._arena_status_raw), count=stats.get("completed_runs", 0))
+        if stats.get("reason"):
+            text += ": " + i18n.tr(stats["reason"])
+        self.arena_status_label.config(text=text)
+
+    def _update_arena_controls(self, running=None):
+        if not hasattr(self, "arena_start_btn"):
+            return
+        running = self.is_running if running is None else running
+        active = running and self.current_mode == "arena" and self.bot is not None
+        stopping = active and self.was_stopped_by_user
+        paused = active and self.bot.is_paused
+        self.arena_start_btn.config(state=tk.NORMAL if self.adb_controller and not running else tk.DISABLED)
+        self.arena_stop_btn.config(state=tk.NORMAL if active and not stopping else tk.DISABLED)
+        self.arena_pause_btn.config(state=tk.NORMAL if active and not stopping and not paused else tk.DISABLED)
+        self.arena_resume_btn.config(state=tk.NORMAL if paused and not stopping else tk.DISABLED)
 
     def _start_penguin_bot(self):
         with log_session(self.name):
@@ -2058,8 +2178,13 @@ class SessionView:
 
     def _update_running_state(self):
         if self.is_running and self.bot:
-            stats = self.bot.get_stats()
-            if self.current_mode == "penguin":
+            stats = dict(self.bot.stats) if self.current_mode == "arena" else self.bot.get_stats()
+            if self.current_mode == "arena":
+                if not self.was_stopped_by_user:
+                    self._arena_status_raw = "일시정지" if self.bot.is_paused else "진행 중"
+                self._update_arena_stats(stats)
+                self._update_arena_controls()
+            elif self.current_mode == "penguin":
                 self._update_penguin_stats(stats)
             elif self.current_mode == "chaos":
                 self._update_chaos_stats(stats)
@@ -2080,6 +2205,12 @@ class SessionView:
     def _pause_bot(self):
         with log_session(self.name):
             if self.bot:
+                if self.current_mode == "arena":
+                    if not self.is_running or self.was_stopped_by_user:
+                        return
+                    self.bot.pause()
+                    self._update_arena_controls()
+                    return
                 self.bot.set_user_action("pause")
                 if self.current_mode == 'chaos':
                     self._update_chaos_pause_controls()
@@ -2092,6 +2223,12 @@ class SessionView:
     def _resume_bot(self):
         with log_session(self.name):
             if self.bot:
+                if self.current_mode == "arena":
+                    if not self.is_running or self.was_stopped_by_user:
+                        return
+                    self.bot.resume()
+                    self._update_arena_controls()
+                    return
                 if self.current_mode == 'chaos':
                     if not self.bot.paused:
                         return
@@ -2109,6 +2246,14 @@ class SessionView:
             if not self.is_running:
                 return
             self.was_stopped_by_user = True
+            if self.current_mode == "arena":
+                if self.bot:
+                    self.bot.stop()
+                self._arena_status_raw = "중지 처리 중…"
+                self._update_arena_stats(self._last_arena_stats)
+                self._update_arena_controls()
+                self.log("NPC 아레나 중지 요청")
+                return
             if self.bot:
                 self.bot.set_user_action("stop")
             if self.current_mode == "chaos":
@@ -2159,7 +2304,10 @@ class SessionView:
         with log_session(self.name):
             self.was_stopped_by_user = True
             if self.bot:
-                self.bot.set_user_action("stop")
+                if self.current_mode == "arena":
+                    self.bot.stop()
+                else:
+                    self.bot.set_user_action("stop")
             self.is_running = False
 
     def cleanup_on_close(self):
@@ -2193,6 +2341,7 @@ class SessionView:
             self.penguin_stop_btn.config(state=tk.DISABLED)
             self.chaos_start_btn.config(state=tk.DISABLED)
             self.chaos_stop_btn.config(state=tk.DISABLED)
+            self._update_arena_controls(False)
             self.test_btn.config(state=tk.DISABLED)
             self.connect_btn.config(state=tk.NORMAL)
             self.disconnect_btn.config(state=tk.DISABLED)
@@ -2213,6 +2362,7 @@ class SessionView:
             self.penguin_stop_btn.config(state=tk.DISABLED)
             self.chaos_start_btn.config(state=tk.DISABLED)
             self.chaos_stop_btn.config(state=tk.DISABLED)
+            self._update_arena_controls(False)
             self.test_btn.config(state=tk.DISABLED)
             self.connect_btn.config(state=tk.NORMAL)
             self.disconnect_btn.config(state=tk.DISABLED)
@@ -2234,6 +2384,7 @@ class SessionView:
         self.chaos_start_btn.config(state=tk.DISABLED if running else (tk.NORMAL if self.adb_controller else tk.DISABLED))
         self.chaos_stop_btn.config(state=tk.NORMAL if running and self.current_mode == "chaos" else tk.DISABLED)
         self._update_chaos_pause_controls(running)
+        self._update_arena_controls(running)
         for combo in self.chaos_hero_combos.values():
             combo.config(state=tk.DISABLED if running else "readonly")
         for control in self.chaos_event_controls:
