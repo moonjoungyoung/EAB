@@ -133,26 +133,32 @@
       "threshold": 0.9
     },
     "dark_1": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/dark_1.png",
       "max_color_error": 0.06
     },
     "dark_2": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/dark_2.png",
       "max_color_error": 0.06
     },
     "fire_2": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/fire_2.png",
       "max_color_error": 0.06
     },
     "ice_2": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/ice_2.png",
       "max_color_error": 0.06
     },
     "forest_2": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/forest_2.png",
       "max_color_error": 0.06
     },
     "light_2": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/light_2.png",
       "max_color_error": 0.06
     },
@@ -474,14 +480,17 @@
       ]
     },
     "forest_1": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/forest_1.png",
       "max_color_error": 0.06
     },
     "fire_1": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/fire_1.png",
       "max_color_error": 0.06
     },
     "light_1": {
+      "region": [495, 110, 345, 60],
       "file": "templates/controls/light_1.png",
       "max_color_error": 0.06
     },
